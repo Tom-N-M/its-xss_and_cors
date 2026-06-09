@@ -1,0 +1,20 @@
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        // Sicher
+//        config.setAllowedOrigins(List.of("http://localhost:8078"));
+//        config.setAllowCredentials(false);
+
+        // Unsicher
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowCredentials(true);
+
+
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }

