@@ -1,0 +1,64 @@
+\section{CORS-Analyse und Verbesserungen}
+\label{sec:cors}
+
+\subsection{Ausgangssituation der Spring-API}
+
+Im Ausgangsstand von \texttt{capstone-main} war keine explizite Spring-CORS-Konfiguration vorhanden. Es gab weder \texttt{@CrossOrigin} noch eine \texttt{CorsConfigurationSource}, einen \texttt{CorsFilter} oder \texttt{http.cors()}. Direkte Cross-Origin-Antworten der API waren damit für fremdes Browser-JavaScript standardmäßig nicht lesbar.
+
+Für die normale lokale Anwendung ist dies funktional unproblematisch. Die Vite-Konfiguration proxyt relative \texttt{/api}-Requests von Port 8078 an die API auf Port 8079. Der Browser sieht nur die Frontend-Origin. CORS wird erst sichtbar, wenn eine separate Seite, etwa auf Port 5173, die API direkt anspricht.
+
+\subsection{Bewusst unsichere Demo-Konfiguration}
+
+Der Branch \path{its-xss-cors-security-break} ergänzt für die Live-Demo eine Spring-CORS-Bean vom Typ \path{CorsConfigurationSource}. Die unsichere Variante akzeptiert mit \texttt{allowedOriginPatterns("*")} jede Origin und erlaubt gleichzeitig Credentials. Zusätzlich werden sämtliche üblichen Methoden und alle Header global für \texttt{/**} freigegeben.
+
+\begin{lstlisting}[caption={Bewusst unsichere CORS-Demo, nicht für Produktion}]
+config.setAllowedOriginPatterns(List.of("*"));
+config.setAllowCredentials(true);
+config.setAllowedMethods(List.of(
+    "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+config.setAllowedHeaders(List.of("*"));
+source.registerCorsConfiguration("/**", config);
+\end{lstlisting}
+
+Diese Konfiguration spiegelt praktisch jede anfragende Origin und hebt die Browser-Lesesperre global auf. Sie ist kein Bestandteil des produktiven XSS-Fixes und darf nicht nach \texttt{capstone-main} übernommen werden.
+
+\subsection{Sichere Vergleichskonfiguration}
+
+Die sichere Demo-Variante erlaubt ausschließlich das reguläre lokale Frontend:
+
+\begin{lstlisting}[caption={Restriktive lokale Vergleichskonfiguration}]
+config.setAllowedOrigins(List.of("http://localhost:8078"));
+config.setAllowCredentials(false);
+\end{lstlisting}
+
+Eine dauerhafte CORS-Konfiguration sollte nur eingeführt werden, wenn ein echtes Cross-Origin-Frontend benötigt wird. Dann müssen Origins aus umgebungsspezifischen Properties stammen, Methoden und Header auf den tatsächlichen Bedarf begrenzt und Routen möglichst selektiv registriert werden. Da der Scheduler Bearer-Tokens explizit im \texttt{Authorization}-Header sendet, ist \texttt{allowCredentials(true)} für den aktuellen API-Flow nicht erforderlich.
+
+\subsection{Öffentliche Datei-Endpunkte}
+
+Die wichtigste CORS-nahe, aber eigenständige Schwachstelle liegt in \path{api/src/main/java/com/frostbear/scheduler/conf/SecurityConfiguration.java}. Der Matcher
+
+\begin{lstlisting}
+requestMatchers("/files/**").permitAll();
+\end{lstlisting}
+
+macht nicht nur bewusst tokenisierte Download-Links öffentlich, sondern auch den Voll-Export \texttt{GET /files/planningperiod/\{id\}/download} sowie mehrere Endpunkte zur Token-Erzeugung im \texttt{FileController}. CORS schützt diese Daten nicht vor direktem Zugriff. Die Demo zeigt lediglich zusätzlich, dass eine breite CORS-Freigabe die Antwort auch für fremdes Browser-JavaScript lesbar macht.
+
+Die Regel sollte auf tatsächlich öffentliche Token-Downloads begrenzt werden. Voll-Exporte und Token-Erzeugung müssen authentifiziert, rollenbasiert autorisiert und auf die konkrete Planungsperiode beziehungsweise Person beschränkt werden.
+
+\subsection{Keycloak- und Frontend-Konfiguration}
+
+Der Realm-Export \texttt{scheduler.json} enthält für den Web-Client eine zu breite Konfiguration:
+
+\begin{itemize}
+    \item \texttt{webOrigins: ["*"]},
+    \item \texttt{implicitFlowEnabled: true},
+    \item \texttt{directAccessGrantsEnabled: true}.
+\end{itemize}
+
+Zusätzlich setzt der Realm \texttt{sslRequired} auf \texttt{none} und deaktiviert den Brute-Force-Schutz. Der OAuth 2.0 Security Best Current Practice rät vom Implicit Grant und vom Resource Owner Password Credentials Grant ab~\cite{rfc9700}. Für den Scheduler-Web-Client sollten konkrete Origins, Authorization Code Flow mit PKCE, TLS außerhalb der lokalen Entwicklung und aktivierter Login-Schutz verwendet werden.
+
+\texttt{web/src/shared/http-client.js} setzt bei jedem Request \texttt{credentials: 'include'}, obwohl die API mit einem expliziten Bearer-Token arbeitet. Der Wert sollte auf \texttt{same-origin} oder \texttt{omit} reduziert werden, solange keine Cookie-basierte API-Sitzung benötigt wird. Dies verhindert, dass spätere Cookies unbeabsichtigt an Cross-Origin-Ziele gesendet werden.
+
+\subsection{Bewertung}
+
+Die Spring-API besaß im sicheren Ausgangsstand keine klassische Allow-All-CORS-Lücke. Das aktuelle Risiko entsteht aus benachbarten Konfigurationen: zu breite öffentliche Datei-Endpunkte, Keycloak-Wildcards, nicht benötigte OAuth-Flows und unnötige Credential-Übermittlung. Werden diese Punkte mit einer später versehentlich global aktivierten CORS-Freigabe kombiniert, wächst die Angriffsfläche erheblich.

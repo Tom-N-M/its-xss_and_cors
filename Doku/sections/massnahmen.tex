@@ -1,0 +1,55 @@
+\section{Bewertung und priorisierte Maßnahmen}
+\label{sec:massnahmen}
+
+\subsection{Ergebnisübersicht}
+
+\begin{table}[H]
+\centering
+\caption{Bewertung zum Berichtsstand nach XSS-Rollout}
+\small
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Bereich} & \textbf{Status} & \textbf{Begründung}\\
+\midrule
+VueCal Stored DOM XSS & behoben & Eigene Event-Slots und Vue-Interpolation sind auf \texttt{capstone-main} vollständig ausgerollt; erneute Prüfung ohne aktuellen Befund.\\
+Eigene Vue-HTML-Senken & kein Befund & Keine produktive direkte Verwendung von \texttt{v-html}, \texttt{innerHTML} oder vergleichbaren Senken in \texttt{web/src}.\\
+Spring API-CORS & kein Allow-All-Befund & Ohne Demo-Konfiguration keine explizite globale CORS-Freigabe; normale Entwicklung nutzt den Vite-Proxy.\\
+\texttt{/files/**} & hoch & Voll-Exporte und Token-Erzeugung liegen unter einer globalen \texttt{permitAll}-Regel.\\
+Keycloak Web-Client & hoch & Wildcard-Web-Origin und nicht benötigte beziehungsweise veraltete OAuth-Flows.\\
+Security-Regression & ausbaufähig & Spezifische automatisierte XSS-, CORS- und Autorisierungstests fehlen im regulären Stand.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Priorität 1: Öffentliche Dateioberfläche begrenzen}
+
+Die pauschale Freigabe von \texttt{/files/**} sollte durch getrennte Regeln ersetzt werden. Nur ausdrücklich öffentliche, ausreichend zufällige und möglichst zeitlich begrenzte Token-Downloads dürfen ohne Login erreichbar sein. Folgende Endpunkte müssen mindestens authentifiziert und fachlich autorisiert werden:
+
+\begin{itemize}
+    \item \texttt{GET /files/planningperiod/\{id\}/download},
+    \item sämtliche \texttt{POST /files/create/...}-Endpunkte,
+    \item \texttt{POST /files/get-or-create-ics-token}.
+\end{itemize}
+
+\subsection{Priorität 2: XSS-Fix durch Tests absichern}
+
+Der ausgerollte Fix sollte mit Komponenten- oder End-to-End-Tests gegen Regression geschützt werden. Für jede \texttt{VueCal}-Ansicht wird ein Event mit HTML- und Event-Handler-Zeichenfolge gerendert. Der Test muss bestätigen, dass der String als Text sichtbar bleibt und kein DOM-Element aus dem Payload entsteht. Ergänzend sollte CI nach neuen Verwendungen von \texttt{v-html}, \texttt{innerHTML} und ähnlichen Senken suchen.
+
+\subsection{Priorität 3: Keycloak und OAuth härten}
+
+In \path{scheduler.json} sind konkrete Frontend-Origins statt \texttt{*} zu hinterlegen. Implicit Flow und Direct Access Grants sollten für den SPA-Web-Client deaktiviert, der Authorization Code Flow mit PKCE verwendet und der Brute-Force-Schutz aktiviert werden. Außerhalb lokaler Entwicklung muss TLS erzwungen werden.
+
+\subsection{Priorität 4: CORS nur bei fachlichem Bedarf aktivieren}
+
+Solange Frontend und API über denselben Origin beziehungsweise Reverse Proxy erreichbar sind, ist keine globale API-CORS-Freigabe nötig. Falls Cross-Origin-Zugriff eingeführt wird, sollte \texttt{SecurityConfiguration.java} eine properties-basierte Allowlist mit blockierendem Default erhalten. Die Registrierung sollte auf tatsächlich benötigte Routen begrenzt werden. Demo-Origins wie \texttt{localhost:5173} dürfen ausschließlich in einem lokalen Entwicklungsprofil vorkommen.
+
+\subsection{Priorität 5: Zusätzliche Schutzschichten}
+
+\begin{itemize}
+    \item \texttt{credentials: 'include'} in \texttt{web/src/shared/http-client.js} auf \texttt{same-origin} oder \texttt{omit} reduzieren.
+    \item CSP im produktiven Reverse Proxy oder Backend einführen und zunächst im Report-Only-Modus testen.
+    \item Freitextfelder serverseitig auf fachlich sinnvolle Längen und Werte validieren.
+    \item \texttt{window.\$keycloak} entfernen oder den globalen Zugriff mindestens reduzieren.
+    \item Dependency- und Security-Checks für npm und Gradle in CI integrieren.
+    \item Die produktive Nginx-/Ingress-Konfiguration dokumentieren; die eingecheckte \texttt{nginx.conf} enthält derzeit keine \texttt{/api}-Proxy-Regel.
+\end{itemize}

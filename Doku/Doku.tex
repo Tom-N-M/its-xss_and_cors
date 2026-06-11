@@ -1,0 +1,94 @@
+\documentclass[11pt,a4paper,bibliography=totoc,listof=totoc]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[left=30mm,right=25mm,top=25mm,bottom=25mm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[labelfont=bf]{caption}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue]{hyperref}
+
+\graphicspath{{figures/}}
+\setlength{\emergencystretch}{2em}
+\setcounter{tocdepth}{2}
+
+\definecolor{codegreen}{rgb}{0,0.5,0}
+\definecolor{codegray}{rgb}{0.45,0.45,0.45}
+\definecolor{backcolour}{rgb}{0.96,0.96,0.94}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showstringspaces=false,
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1.5cm}
+        {\large Berufliche Hochschule Hamburg -- Informatik\par}
+        \vspace{0.6cm}
+        {\large IT Security\par}
+        \vspace{2.3cm}
+        {\huge\bfseries Cross-Site Scripting und Cross-Origin Resource Sharing im Scheduler-Projekt\par}
+        \vspace{1.2cm}
+        {\Large Projektbericht\par}
+    \end{center}
+
+    \vfill
+
+    \begin{tabular}{@{}ll@{}}
+        \textbf{Projektgruppe:} & Arvid Freese\\
+                               & Linus Paliga\\
+                               & Tom Markmann\\
+                               & Raik Ole Kannenberg\\[0.4cm]
+        \textbf{Präsentation:}  & Hamburg, 10. Juni 2026\\
+        \textbf{Berichtsstand:} & nach vollständigem XSS-Rollout auf \texttt{capstone-main}
+    \end{tabular}
+\end{titlepage}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{Roman}
+\input{sections/abstract}
+\newpage
+\tableofcontents
+\newpage
+
+\pagenumbering{arabic}
+\input{sections/einleitung}
+\input{sections/grundlagen}
+\input{sections/vorgehen}
+\input{sections/xss}
+\input{sections/cors}
+\input{sections/demo}
+\input{sections/massnahmen}
+\input{sections/fazit}
+
+\clearpage
+\bibliographystyle{plain}
+\bibliography{Quellen}
+
+\clearpage
+\input{sections/anhang}
+
+\end{document}

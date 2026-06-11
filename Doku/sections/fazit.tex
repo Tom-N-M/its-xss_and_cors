@@ -1,0 +1,8 @@
+\section{Fazit}
+\label{sec:fazit}
+
+Die Untersuchung zeigt, dass Sicherheitsprobleme im Scheduler nicht nur durch offensichtlich unsicheren eigenen Code entstehen. Die reale XSS-Schwachstelle lag im Zusammenspiel aus kontrollierbaren Datenbankwerten und dem komfortablen, aber für diese Daten ungeeigneten Standardrenderer von \texttt{vue-cal}. Der strukturelle Fix über eigene Event-Slots und Vue-Interpolation beseitigt die Ursache. Nach dem vollständigen Rollout auf \texttt{capstone-main} und erneuter Prüfung besteht kein bekanntes aktuelles XSS-Risiko dieser Art.
+
+Bei CORS war die Ausgangslage differenzierter: Die Spring-API war nicht pauschal für fremde Origins freigegeben und die normale lokale Anwendung vermeidet Cross-Origin-Aufrufe über den Vite-Proxy. Erst die bewusst unsichere Demo-Konfiguration machte den öffentlichen Datei-Export für eine fremde Browser-Origin lesbar. Die Demo verdeutlicht damit korrekt die Wirkung von CORS, darf aber nicht mit Authentifizierung oder einem automatischen Token-Leak gleichgesetzt werden.
+
+Der größte verbleibende Handlungsbedarf liegt in den angrenzenden Schutzschichten. Die globale \texttt{/files/**}-Freigabe muss begrenzt, die Keycloak-Konfiguration gehärtet und der XSS-Fix durch Regressionstests abgesichert werden. CORS sollte weiterhin blockierend bleiben, solange kein fachlicher Cross-Origin-Bedarf existiert. Die zentrale Erkenntnis aus beiden Themen ist gleich: Sicherheitsgrenzen müssen explizit kontrolliert werden. Nutzerdaten gehören an eine Textausgabegrenze; fremde Origins erhalten nur die minimal erforderliche Lesefreigabe.

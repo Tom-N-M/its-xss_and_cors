@@ -1,0 +1,14 @@
+# IDE metadata
+.idea/
+
+# Office lock files
+~$*
+
+# LaTeX build artifacts
+Doku/*.aux
+Doku/*.bbl
+Doku/*.blg
+Doku/*.log
+Doku/*.synctex.gz
+Doku/*.toc
+Doku/out/
