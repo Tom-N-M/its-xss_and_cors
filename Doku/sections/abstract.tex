@@ -1,8 +1,37 @@
+\section*{Abstract}
 \begin{abstract}
-\noindent
-Dieser Projektbericht untersucht Cross-Site Scripting (XSS) und Cross-Origin Resource Sharing (CORS) anhand der realen Vue-/Spring-Boot-Anwendung \emph{Scheduler}. Die Themen wurden innerhalb der Gruppe aufgeteilt: Arvid Freese und Linus Paliga bearbeiteten XSS, Tom Markmann und Raik Ole Kannenberg CORS. Nach der Herleitung der theoretischen Grundlagen wurde das Scheduler-Repository systematisch auf relevante Datenflüsse, Ausgabesenken und Sicherheitskonfigurationen geprüft. Für beide Themen entstanden anschließend lokale Live-Demos.
+  \noindent
+  Dieser Projektbericht untersucht Cross-Site Scripting (XSS) und
+  Cross-Origin Resource Sharing (CORS) anhand der realen
+  Vue-/Spring-Boot-Anwendung \emph{Scheduler}. Die Themen wurden
+  innerhalb der Gruppe aufgeteilt: Arvid Freese und Linus Paliga
+  bearbeiteten XSS, Tom Markmann und Raik Ole Kannenberg CORS. Nach
+  der Herleitung der theoretischen Grundlagen wurde das
+  Scheduler-Repository systematisch auf relevante Datenflüsse,
+  Ausgabesenken und Sicherheitskonfigurationen geprüft. Für beide
+  Themen entstanden anschließend lokale Live-Demos.
 
-Die XSS-Analyse identifizierte eine reale Stored-DOM-XSS-Schwachstelle. Datenbankbasierte Veranstaltungsnamen, Gruppenbezeichnungen und Reservierungslabels wurden in mehreren Kalenderansichten an den Standardrenderer der Bibliothek \texttt{vue-cal} übergeben, der Event-Titel und -Inhalte als HTML rendert. Die Schwachstelle wurde durch eigene Event-Slots mit Vue-Interpolation strukturell behoben. Zum Berichtsstand ist dieser Fix auf \texttt{capstone-main} in allen relevanten Kalenderansichten ausgerollt; nach erneuter Prüfung besteht kein bekanntes aktuelles XSS-Risiko dieser Art.
+  Die XSS-Analyse identifizierte eine reale
+  Stored-DOM-XSS-Schwachstelle. Datenbankbasierte
+  Veranstaltungsnamen, Gruppenbezeichnungen und Reservierungslabels
+  wurden in mehreren Kalenderansichten an den Standardrenderer der
+  Bibliothek \texttt{vue-cal} übergeben, der Event-Titel und -Inhalte
+  als HTML rendert. Die Schwachstelle wurde durch eigene Event-Slots
+  mit Vue-Interpolation strukturell behoben. Zum Berichtsstand ist
+  dieser Fix auf \texttt{capstone-main} in allen relevanten
+  Kalenderansichten ausgerollt; nach erneuter Prüfung besteht kein
+  bekanntes aktuelles XSS-Risiko dieser Art.
 
-Die Spring-API besaß im untersuchten Ausgangsstand keine pauschale CORS-Freigabe. Die normale lokale Anwendung vermeidet Cross-Origin-Aufrufe über den Vite-Proxy. Für die Demo wurde im separaten Security-Branch bewusst eine unsichere globale Origin-Freigabe ergänzt und anschließend einer festen Allowlist gegenübergestellt. Unabhängig davon bleiben konkrete Verbesserungen erforderlich: \texttt{/files/**} ist zu breit öffentlich freigegeben, Keycloak verwendet für den Web-Client eine Wildcard-Origin sowie nicht benötigte OAuth-Flows, und das Frontend setzt trotz Bearer-Token-Authentifizierung \texttt{credentials: include}. Der Bericht leitet daraus priorisierte, direkt auf Scheduler-Dateien bezogene Maßnahmen ab.
+  Die Spring-API besaß im untersuchten Ausgangsstand keine pauschale
+  CORS-Freigabe. Die normale lokale Anwendung vermeidet
+  Cross-Origin-Aufrufe über den Vite-Proxy. Für die Demo wurde im
+  separaten Security-Branch bewusst eine unsichere globale
+  Origin-Freigabe ergänzt und anschließend einer festen Allowlist
+  gegenübergestellt. Unabhängig davon bleiben konkrete Verbesserungen
+  erforderlich: \texttt{/files/**} ist zu breit öffentlich
+  freigegeben, Keycloak verwendet für den Web-Client eine
+  Wildcard-Origin sowie nicht benötigte OAuth-Flows, und das Frontend
+  setzt trotz Bearer-Token-Authentifizierung \texttt{credentials:
+  include}. Der Bericht leitet daraus priorisierte, direkt auf
+  Scheduler-Dateien bezogene Maßnahmen ab.
 \end{abstract}

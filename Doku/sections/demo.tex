@@ -3,48 +3,77 @@
 
 \subsection{XSS-Demo}
 
-Die XSS-Demo stellt denselben persistent gespeicherten Wert in einer anfälligen und einer sicheren Kalenderansicht gegenüber. Der Test \path{api/src/test/java/com/frostbear/scheduler/demo/XssDemoSetupTest.java} bereitet eine vorhandene lokale Planungsperiode mit reproduzierbaren Demo-Daten vor. Die zugehörige Gradle-Aufgabe \path{prepareXssDemo} und die Property \path{xssDemoPlanningPeriodId} erlauben die gezielte Auswahl.
+Die XSS-Demo stellt denselben persistent gespeicherten Wert in einer
+anfälligen und einer sicheren Kalenderansicht gegenüber. Der Test
+\path{api/src/test/java/com/frostbear/scheduler/demo/XssDemoSetupTest.java}
+bereitet eine vorhandene lokale Planungsperiode mit reproduzierbaren
+Demo-Daten vor. Die zugehörige Gradle-Aufgabe \path{prepareXssDemo}
+und die Property \path{xssDemoPlanningPeriodId} erlauben die gezielte Auswahl.
 
-Die unsichere Ansicht übergibt das Event vollständig an den Standardrenderer von \texttt{vue-cal}. Die sichere Ansicht \texttt{ReserveTimeslotSafe.vue} definiert einen eigenen Event-Slot. Über \texttt{VITE\_XSS\_SAFE\_RESERVATION\_VIEW} und die Router-Umschaltung kann für die Präsentation zwischen beiden Darstellungen gewechselt werden.
+Die unsichere Ansicht übergibt das Event vollständig an den
+Standardrenderer von \texttt{vue-cal}. Die sichere Ansicht
+\texttt{ReserveTimeslotSafe.vue} definiert einen eigenen Event-Slot.
+Über \texttt{VITE\_XSS\_SAFE\_RESERVATION\_VIEW} und die
+Router-Umschaltung kann für die Präsentation zwischen beiden
+Darstellungen gewechselt werden.
 
-Der entscheidende Vergleich ist nicht ein unterschiedlicher Payload, sondern dieselbe gespeicherte Eingabe:
+Der entscheidende Vergleich ist nicht ein unterschiedlicher Payload,
+sondern dieselbe gespeicherte Eingabe:
 
 \begin{enumerate}
-    \item Unsichere Ansicht öffnen: Der Browser interpretiert den Wert als HTML und der lokale Alert erscheint.
-    \item Sichere Ansicht öffnen: Der vollständige Payload bleibt sichtbar, wird aber nur als Text dargestellt.
-    \item Ursache im Code zeigen: Standardrenderer mit HTML-Senke gegenüber eigenem Slot mit Vue-Interpolation.
+  \item Unsichere Ansicht öffnen: Der Browser interpretiert den Wert
+    als HTML und der lokale Alert erscheint.
+  \item Sichere Ansicht öffnen: Der vollständige Payload bleibt
+    sichtbar, wird aber nur als Text dargestellt.
+  \item Ursache im Code zeigen: Standardrenderer mit HTML-Senke
+    gegenüber eigenem Slot mit Vue-Interpolation.
 \end{enumerate}
 
 \subsection{CORS-Demo}
 
-Die CORS-Demo verwendet vier lokale Komponenten: Keycloak und PostgreSQL, die Spring-API auf Port 8079, das reguläre Vue-Frontend auf Port 8078 sowie die separate Angreifer-Demo aus \texttt{cors/index.html} auf Port 5173.
+Die CORS-Demo verwendet vier lokale Komponenten: Keycloak und
+PostgreSQL, die Spring-API auf Port 8079, das reguläre Vue-Frontend
+auf Port 8078 sowie die separate Angreifer-Demo aus
+\texttt{cors/index.html} auf Port 5173.
 
-Die Seite ruft den öffentlichen Planungsperioden-Export direkt auf und versucht, die Antwort als Datei zu lesen. Der Vergleich zeigt:
+Die Seite ruft den öffentlichen Planungsperioden-Export direkt auf
+und versucht, die Antwort als Datei zu lesen. Der Vergleich zeigt:
 
 \begin{enumerate}
-    \item Ohne passende CORS-Freigabe oder mit fester Allowlist blockiert der Browser den Lesezugriff der Origin \texttt{localhost:5173}.
-    \item Mit der bewusst unsicheren globalen Freigabe kann die fremde Seite die Antwort lesen und den Download auslösen.
+  \item Ohne passende CORS-Freigabe oder mit fester Allowlist
+    blockiert der Browser den Lesezugriff der Origin \texttt{localhost:5173}.
+  \item Mit der bewusst unsicheren globalen Freigabe kann die fremde
+    Seite die Antwort lesen und den Download auslösen.
 \end{enumerate}
 
 \begin{figure}[H]
+  \centering
+  \begin{minipage}[t]{0.48\textwidth}
     \centering
-    \begin{minipage}[t]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{cors-unsecure}
-        \caption*{Unsichere globale Freigabe: Antwort ist lesbar.}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{cors-secure}
-        \caption*{Feste Allowlist: Demo-Origin wird blockiert.}
-    \end{minipage}
-    \caption{Gegenüberstellung der lokalen CORS-Demo}
-    \label{fig:cors-demo}
+    \includegraphics[width=\linewidth]{cors-unsecure}
+    \caption*{Unsichere globale Freigabe: Antwort ist lesbar.}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{cors-secure}
+    \caption*{Feste Allowlist: Demo-Origin wird blockiert.}
+  \end{minipage}
+  \caption{Gegenüberstellung der lokalen CORS-Demo}
+  \label{fig:cors-demo}
 \end{figure}
 
 \subsection{Aussagekraft und Grenzen}
 
-Die Demos beweisen jeweils einen klar abgegrenzten Mechanismus. Der XSS-Alert beweist Codeausführung im Scheduler-Origin, aber noch keine konkrete Datenexfiltration. Der CORS-Dateidownload beweist, dass eine fremde Origin eine öffentliche Antwort lesen kann, aber noch keinen Token-Diebstahl.
+Die Demos beweisen jeweils einen klar abgegrenzten Mechanismus. Der
+XSS-Alert beweist Codeausführung im Scheduler-Origin, aber noch keine
+konkrete Datenexfiltration. Der CORS-Dateidownload beweist, dass eine
+fremde Origin eine öffentliche Antwort lesen kann, aber noch keinen
+Token-Diebstahl.
 
-Insbesondere wird der Bearer-Token des Scheduler-Frontends nicht automatisch durch \texttt{allowCredentials(true)} an die Demo-Origin übertragen. Ein vollständiger Account-Takeover würde einen zusätzlichen Fehler voraussetzen, etwa die nachgewiesene XSS-Klasse vor ihrem Fix, eine unsichere Token-Antwort oder eine spätere Cookie-basierte Authentifizierung mit fehlerhaftem CORS.
+Insbesondere wird der Bearer-Token des Scheduler-Frontends nicht
+automatisch durch \texttt{allowCredentials(true)} an die Demo-Origin
+übertragen. Ein vollständiger Account-Takeover würde einen
+zusätzlichen Fehler voraussetzen, etwa die nachgewiesene XSS-Klasse
+vor ihrem Fix, eine unsichere Token-Antwort oder eine spätere
+Cookie-basierte Authentifizierung mit fehlerhaftem CORS.

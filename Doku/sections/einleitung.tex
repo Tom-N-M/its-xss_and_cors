@@ -3,23 +3,52 @@
 
 \subsection{Motivation}
 
-Webanwendungen verarbeiten fortlaufend Daten aus Formularen, Datenbanken, APIs und dem Browserkontext. Zwei zentrale Sicherheitsgrenzen sind dabei die Trennung von Daten und ausführbarem Code sowie die Trennung verschiedener Web-Origins. XSS verletzt die erste Grenze: Ein eigentlich als Text gedachter Wert wird als HTML oder JavaScript interpretiert. CORS steuert die zweite Grenze: Ein Server kann dem Browser erlauben, Antworten auch fremden Origins zugänglich zu machen.
+Webanwendungen verarbeiten fortlaufend Daten aus Formularen,
+Datenbanken, APIs und dem Browserkontext. Zwei zentrale
+Sicherheitsgrenzen sind dabei die Trennung von Daten und ausführbarem
+Code sowie die Trennung verschiedener Web-Origins. XSS verletzt die
+erste Grenze: Ein eigentlich als Text gedachter Wert wird als HTML
+oder JavaScript interpretiert. CORS steuert die zweite Grenze: Ein
+Server kann dem Browser erlauben, Antworten auch fremden Origins
+zugänglich zu machen.
 
-Der Scheduler eignet sich als praxisnahes Untersuchungsobjekt, weil er zahlreiche nutzerkontrollierbare Stammdaten und Kalenderansichten, ein Vue-Frontend, eine Spring-Boot-API und Keycloak zur Authentifizierung kombiniert. Ein Fehler an der Ausgabegrenze kann dadurch im Browser eines eingeloggten Nutzers ausgeführt werden. Eine zu breite Origin-Freigabe kann wiederum die durch die Same-Origin Policy vorgesehene Lesesperre aufheben.
+Der Scheduler eignet sich als praxisnahes Untersuchungsobjekt, weil
+er zahlreiche nutzerkontrollierbare Stammdaten und Kalenderansichten,
+ein Vue-Frontend, eine Spring-Boot-API und Keycloak zur
+Authentifizierung kombiniert. Ein Fehler an der Ausgabegrenze kann
+dadurch im Browser eines eingeloggten Nutzers ausgeführt werden. Eine
+zu breite Origin-Freigabe kann wiederum die durch die Same-Origin
+Policy vorgesehene Lesesperre aufheben.
 
 \subsection{Zielsetzung und Leitfragen}
 
-Ziel des Projekts war nicht eine generische Darstellung der beiden Themen, sondern eine konkrete Sicherheitsprüfung des Scheduler-Projekts mit nachvollziehbaren Live-Demos und umsetzbaren Verbesserungen. Der Bericht beantwortet vier Leitfragen:
+Ziel des Projekts war nicht eine generische Darstellung der beiden
+Themen, sondern eine konkrete Sicherheitsprüfung des
+Scheduler-Projekts mit nachvollziehbaren Live-Demos und umsetzbaren
+Verbesserungen. Der Bericht beantwortet vier Leitfragen:
 
 \begin{enumerate}
-    \item Welche XSS- und CORS-relevanten Datenflüsse und Konfigurationen existieren im Scheduler?
-    \item Welche Schwachstellen oder riskanten Konfigurationen lassen sich tatsächlich belegen?
-    \item Wie können Ursache, Wirkung und Behebung lokal demonstriert werden?
-    \item Welche Maßnahmen sollten auf \texttt{capstone-main} dauerhaft umgesetzt und getestet werden?
+  \item Welche XSS- und CORS-relevanten Datenflüsse und
+    Konfigurationen existieren im Scheduler?
+  \item Welche Schwachstellen oder riskanten Konfigurationen lassen
+    sich tatsächlich belegen?
+  \item Wie können Ursache, Wirkung und Behebung lokal demonstriert werden?
+  \item Welche Maßnahmen sollten auf \texttt{capstone-main} dauerhaft
+    umgesetzt und getestet werden?
 \end{enumerate}
 
 \subsection{Abgrenzung und Berichtsstand}
 
-Die Prüfung bezog sich auf getrackte Quell- und Konfigurationsdateien aus \texttt{api/}, \texttt{web/}, Docker, Nginx und dem Keycloak-Realm-Export \texttt{scheduler.json}. Die konkrete Rendering-Stelle in \texttt{vue-cal} wurde zusätzlich in der installierten Bibliothek untersucht. Produktive Systeme wurden nicht aktiv angegriffen.
+Die Prüfung bezog sich auf getrackte Quell- und Konfigurationsdateien
+aus \texttt{api/}, \texttt{web/}, Docker, Nginx und dem
+Keycloak-Realm-Export \texttt{scheduler.json}. Die konkrete
+Rendering-Stelle in \texttt{vue-cal} wurde zusätzlich in der
+installierten Bibliothek untersucht. Produktive Systeme wurden nicht
+aktiv angegriffen.
 
-Der Bericht beschreibt den Stand nach dem vollständigen Rollout des XSS-Fixes auf \path{capstone-main}. Die Demo-Setups wurden dagegen in einem separaten, von \path{capstone-main} abgeleiteten Security-Demobranch umgesetzt. Absichtlich schwache CORS-Einstellungen, Umschaltlogik und Demo-Testdaten gehören ausschließlich zu diesem Demonstrationsstand und nicht zum produktiven Fix.
+Der Bericht beschreibt den Stand nach dem vollständigen Rollout des
+XSS-Fixes auf \path{capstone-main}. Die Demo-Setups wurden dagegen in
+einem separaten, von \path{capstone-main} abgeleiteten
+Security-Demobranch umgesetzt. Absichtlich schwache
+CORS-Einstellungen, Umschaltlogik und Demo-Testdaten gehören
+ausschließlich zu diesem Demonstrationsstand und nicht zum produktiven Fix.

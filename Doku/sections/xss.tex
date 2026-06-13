@@ -3,25 +3,41 @@
 
 \subsection{Gefundene Stored-DOM-XSS-Schwachstelle}
 
-Im eigenen Frontend-Code wurden keine direkten produktiven Verwendungen von \texttt{v-html}, \texttt{innerHTML}, \texttt{insertAdjacentHTML} oder \texttt{eval} gefunden. Die relevante Senke lag in der Drittbibliothek \texttt{vue-cal} in Version \texttt{\^{}4.8.1}. Deren Standardrenderer behandelt \texttt{event.title} und \texttt{event.content} als HTML.
+Im eigenen Frontend-Code wurden keine direkten produktiven
+Verwendungen von \texttt{v-html}, \texttt{innerHTML},
+\texttt{insertAdjacentHTML} oder \texttt{eval} gefunden. Die
+relevante Senke lag in der Drittbibliothek \texttt{vue-cal} in
+Version \texttt{\^{}4.8.1}. Deren Standardrenderer behandelt
+\texttt{event.title} und \texttt{event.content} als HTML.
 
-Mehrere Scheduler-Ansichten übergaben datenbankbasierte Werte an genau diese Felder, ohne einen eigenen Event-Slot zu definieren. Besonders relevant waren folgende Komponenten:
+Mehrere Scheduler-Ansichten übergaben datenbankbasierte Werte an
+genau diese Felder, ohne einen eigenen Event-Slot zu definieren.
+Besonders relevant waren folgende Komponenten:
 
 \begin{itemize}
-    \item \texttt{ReserveTimeslot.vue}: Reservierungslabel und Veranstaltungsname als \texttt{title},
-    \item \texttt{AssignmentView.vue}: Veranstaltungs- und Gruppenname als \texttt{title} beziehungsweise \texttt{content},
-    \item \texttt{EditIncompleteStateAvailabilities.vue}: Gruppenname als \texttt{content},
-    \item \texttt{TimeSlotCalendarView.vue}: Verwendung des Standardrenderers und HTML-Strings für Statusicons.
+  \item \texttt{ReserveTimeslot.vue}: Reservierungslabel und
+    Veranstaltungsname als \texttt{title},
+  \item \texttt{AssignmentView.vue}: Veranstaltungs- und Gruppenname
+    als \texttt{title} beziehungsweise \texttt{content},
+  \item \texttt{EditIncompleteStateAvailabilities.vue}: Gruppenname
+    als \texttt{content},
+  \item \texttt{TimeSlotCalendarView.vue}: Verwendung des
+    Standardrenderers und HTML-Strings für Statusicons.
 \end{itemize}
 
-Die bereits vorhandene Datei \texttt{ScheduleOverview.vue} zeigte das sichere Gegenmuster: Sie definierte eigene \texttt{event}-Slots und gab Titel, Inhalte und Annotationen über Vue-Interpolation aus.
+Die bereits vorhandene Datei \texttt{ScheduleOverview.vue} zeigte das
+sichere Gegenmuster: Sie definierte eigene \texttt{event}-Slots und
+gab Titel, Inhalte und Annotationen über Vue-Interpolation aus.
 
 \subsection{Konkreter Datenfluss und Risiko}
 
-Der nachgewiesene Datenfluss verlief über eine persistente Quelle und eine DOM-Senke:
+Der nachgewiesene Datenfluss verlief über eine persistente Quelle und
+eine DOM-Senke:
 
 \begin{center}
-\texttt{Eingabefeld / Import} $\rightarrow$ \texttt{Datenbank} $\rightarrow$ \texttt{API} $\rightarrow$ \texttt{event.title/content} $\rightarrow$ \texttt{vue-cal innerHTML}
+  \texttt{Eingabefeld / Import} $\rightarrow$ \texttt{Datenbank}
+  $\rightarrow$ \texttt{API} $\rightarrow$
+  \texttt{event.title/content} $\rightarrow$ \texttt{vue-cal innerHTML}
 \end{center}
 
 Ein harmloser lokaler Nachweis verwendete einen Wert der Form:
@@ -30,33 +46,65 @@ Ein harmloser lokaler Nachweis verwendete einen Wert der Form:
 XSS Demo <img src=x onerror="alert('XSS Demo')">
 \end{lstlisting}
 
-Das nicht vorhandene Bild löst den \texttt{onerror}-Handler aus. Der Alert beweist lediglich Codeausführung. Realistisch könnte eingeschleuster Code sichtbare Planungsdaten lesen, UI-Inhalte manipulieren oder API-Requests im Kontext des eingeloggten Nutzers auslösen. Das Risiko wird dadurch erhöht, dass \texttt{web/src/App.vue} die Keycloak-Instanz als \texttt{window.\$keycloak} verfügbar macht und der Access Token zusätzlich im Vuex-Session-State liegt.
+Das nicht vorhandene Bild löst den \texttt{onerror}-Handler aus. Der
+Alert beweist lediglich Codeausführung. Realistisch könnte
+eingeschleuster Code sichtbare Planungsdaten lesen, UI-Inhalte
+manipulieren oder API-Requests im Kontext des eingeloggten Nutzers
+auslösen. Das Risiko wird dadurch erhöht, dass
+\texttt{web/src/App.vue} die Keycloak-Instanz als
+\texttt{window.\$keycloak} verfügbar macht und der Access Token
+zusätzlich im Vuex-Session-State liegt.
 
 \subsection{Struktureller Fix}
 
-Die Schwachstelle wurde nicht durch eine Payload-Blacklist behoben, sondern durch Entfernung der unsicheren Ausgabesenke. Alle relevanten \texttt{VueCal}-Instanzen mit nutzer- oder datenbankkontrollierten Werten besitzen zum Berichtsstand eigene Event-Slots. Titel, Inhalte und Statusinformationen werden darin als Text oder als strukturierte UI-Elemente gerendert.
+Die Schwachstelle wurde nicht durch eine Payload-Blacklist behoben,
+sondern durch Entfernung der unsicheren Ausgabesenke. Alle relevanten
+\texttt{VueCal}-Instanzen mit nutzer- oder datenbankkontrollierten
+Werten besitzen zum Berichtsstand eigene Event-Slots. Titel, Inhalte
+und Statusinformationen werden darin als Text oder als strukturierte
+UI-Elemente gerendert.
 
-Der Security-Branch demonstriert den Unterschied exemplarisch mit zwei Komponenten:
+Der Security-Branch demonstriert den Unterschied exemplarisch mit
+zwei Komponenten:
 
 \begin{itemize}
-    \item \texttt{ReserveTimeslot.vue}: ursprünglicher Standardrenderer für die unsichere Demo,
-    \item \texttt{ReserveTimeslotSafe.vue}: eigener \texttt{v-slot:event} mit \texttt{\{\{ event.title \}\}}.
+  \item \texttt{ReserveTimeslot.vue}: ursprünglicher Standardrenderer
+    für die unsichere Demo,
+  \item \texttt{ReserveTimeslotSafe.vue}: eigener
+    \texttt{v-slot:event} mit \texttt{\{\{ event.title \}\}}.
 \end{itemize}
 
-\path{web/.env.xss-safe}, die Umschaltung in \path{web/src/router.js} und die npm-Skripte \path{dev:xss-safe} beziehungsweise \path{build:xss-safe} sind reine Demo-Artefakte. Auf \path{capstone-main} ist der sichere Renderer direkt in den regulären Ansichten umgesetzt; eine Laufzeitumschaltung zurück zur anfälligen Variante ist dort nicht vorhanden.
+\path{web/.env.xss-safe}, die Umschaltung in \path{web/src/router.js}
+und die npm-Skripte \path{dev:xss-safe} beziehungsweise
+\path{build:xss-safe} sind reine Demo-Artefakte. Auf
+\path{capstone-main} ist der sichere Renderer direkt in den regulären
+Ansichten umgesetzt; eine Laufzeitumschaltung zurück zur anfälligen
+Variante ist dort nicht vorhanden.
 
 \subsection{Bewertung nach dem Rollout}
 
-Nach dem vollständigen Rollout und einer erneuten Prüfung aller relevanten Kalenderansichten auf \texttt{capstone-main} besteht dort kein bekanntes aktuelles XSS-Risiko über den \texttt{vue-cal}-Standardrenderer. Die weiteren relevanten Entwicklungsbranches wurden ebenfalls geprüft und enthalten die ursprüngliche Schwachstelle weiterhin; der Fix wurde bewusst nur auf \texttt{capstone-main} ausgerollt. Diese Aussage bedeutet nicht, dass zukünftige Änderungen automatisch sicher bleiben. Neue Bibliotheken, neue Kalenderansichten oder eine spätere Verwendung von \texttt{v-html} können dieselbe Schwachstellenklasse erneut einführen.
+Nach dem vollständigen Rollout und einer erneuten Prüfung aller
+relevanten Kalenderansichten auf \texttt{capstone-main} besteht dort
+kein bekanntes aktuelles XSS-Risiko über den
+\texttt{vue-cal}-Standardrenderer. Die weiteren relevanten
+Entwicklungsbranches wurden ebenfalls geprüft und enthalten die
+ursprüngliche Schwachstelle weiterhin; der Fix wurde bewusst nur auf
+\texttt{capstone-main} ausgerollt. Diese Aussage bedeutet nicht, dass
+zukünftige Änderungen automatisch sicher bleiben. Neue Bibliotheken,
+neue Kalenderansichten oder eine spätere Verwendung von
+\texttt{v-html} können dieselbe Schwachstellenklasse erneut einführen.
 
 \subsection{Verbleibende Schutzmaßnahmen}
 
 Für nachhaltigen Schutz sind folgende Ergänzungen sinnvoll:
 
 \begin{itemize}
-    \item Security-Regressionstests, die typische Payloads in jeder Kalenderansicht als Text erwarten,
-    \item serverseitige Längen- und Fachvalidierung für Namen, Labels, Annotationen und Freitextfelder,
-    \item eine produktionsgerechte CSP ohne unnötiges \texttt{unsafe-inline},
-    \item regelmäßige Prüfung von Dependency-Updates und Bibliotheksrenderern,
-    \item Entfernung unnötiger globaler Token-Zugriffe wie \texttt{window.\$keycloak}.
+  \item Security-Regressionstests, die typische Payloads in jeder
+    Kalenderansicht als Text erwarten,
+  \item serverseitige Längen- und Fachvalidierung für Namen, Labels,
+    Annotationen und Freitextfelder,
+  \item eine produktionsgerechte CSP ohne unnötiges \texttt{unsafe-inline},
+  \item regelmäßige Prüfung von Dependency-Updates und Bibliotheksrenderern,
+  \item Entfernung unnötiger globaler Token-Zugriffe wie
+    \texttt{window.\$keycloak}.
 \end{itemize}

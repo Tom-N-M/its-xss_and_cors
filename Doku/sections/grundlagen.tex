@@ -3,23 +3,44 @@
 
 \subsection{Cross-Site Scripting}
 
-XSS entsteht, wenn nicht vertrauenswürdige Daten eine Ausgabesenke erreichen, die den Wert als HTML oder JavaScript interpretiert. Der eingeschleuste Code läuft anschließend im Origin der legitimen Anwendung und unterliegt damit nicht der Same-Origin-Sperre gegenüber dieser Anwendung. Er kann sichtbare Inhalte lesen, die Oberfläche verändern und Requests über den vorhandenen Anwendungskontext auslösen. OWASP empfiehlt deshalb kontextgerechtes Output Encoding und sichere Framework-Ausgabe als primäre Schutzmaßnahme~\cite{owaspXss}.
+XSS entsteht, wenn nicht vertrauenswürdige Daten eine Ausgabesenke
+erreichen, die den Wert als HTML oder JavaScript interpretiert. Der
+eingeschleuste Code läuft anschließend im Origin der legitimen
+Anwendung und unterliegt damit nicht der Same-Origin-Sperre gegenüber
+dieser Anwendung. Er kann sichtbare Inhalte lesen, die Oberfläche
+verändern und Requests über den vorhandenen Anwendungskontext
+auslösen. OWASP empfiehlt deshalb kontextgerechtes Output Encoding
+und sichere Framework-Ausgabe als primäre Schutzmaßnahme~\cite{owaspXss}.
 
-Die klassischen Varianten unterscheiden sich durch Herkunft und Lebensdauer des Payloads:
+Die klassischen Varianten unterscheiden sich durch Herkunft und
+Lebensdauer des Payloads:
 
 \begin{itemize}
-    \item \textbf{Stored XSS}: Der Payload wird persistent gespeichert und bei späteren Aufrufen erneut ausgeliefert.
-    \item \textbf{Reflected XSS}: Der Payload stammt aus dem aktuellen Request und wird unmittelbar zurückgegeben.
-    \item \textbf{DOM-based XSS}: Die unsichere Verarbeitung erfolgt im Browser, beispielsweise über \texttt{innerHTML}.
+  \item \textbf{Stored XSS}: Der Payload wird persistent gespeichert
+    und bei späteren Aufrufen erneut ausgeliefert.
+  \item \textbf{Reflected XSS}: Der Payload stammt aus dem aktuellen
+    Request und wird unmittelbar zurückgegeben.
+  \item \textbf{DOM-based XSS}: Die unsichere Verarbeitung erfolgt im
+    Browser, beispielsweise über \texttt{innerHTML}.
 \end{itemize}
 
-Der im Scheduler gefundene Fall kombiniert Stored und DOM-based XSS: Der Wert liegt dauerhaft in der Datenbank, wird über die API geladen und erst beim Rendern durch \texttt{vue-cal} als HTML in das DOM geschrieben.
+Der im Scheduler gefundene Fall kombiniert Stored und DOM-based XSS:
+Der Wert liegt dauerhaft in der Datenbank, wird über die API geladen
+und erst beim Rendern durch \texttt{vue-cal} als HTML in das DOM geschrieben.
 
 \subsection{Quellen, Senken und sichere Ausgabe}
 
-Eine \emph{Quelle} ist ein kontrollierbarer Datenursprung, beispielsweise ein Veranstaltungsname, Gruppenname oder Reservierungslabel. Eine \emph{Senke} ist eine Operation, die Daten als aktiven Inhalt interpretiert. Typische Senken sind \texttt{innerHTML}, Vue-\texttt{v-html}, \texttt{insertAdjacentHTML} oder ein Bibliotheksrenderer mit vergleichbarem Verhalten.
+Eine \emph{Quelle} ist ein kontrollierbarer Datenursprung,
+beispielsweise ein Veranstaltungsname, Gruppenname oder
+Reservierungslabel. Eine \emph{Senke} ist eine Operation, die Daten
+als aktiven Inhalt interpretiert. Typische Senken sind
+\texttt{innerHTML}, Vue-\texttt{v-html}, \texttt{insertAdjacentHTML}
+oder ein Bibliotheksrenderer mit vergleichbarem Verhalten.
 
-Vue-Interpolation mit doppelten geschweiften Klammern escaped HTML standardmäßig und erzeugt Text statt aktiver DOM-Strukturen~\cite{vueSecurity}. Genau diese Eigenschaft wird beim Scheduler-Fix genutzt:
+Vue-Interpolation mit doppelten geschweiften Klammern escaped HTML
+standardmäßig und erzeugt Text statt aktiver
+DOM-Strukturen~\cite{vueSecurity}. Genau diese Eigenschaft wird beim
+Scheduler-Fix genutzt:
 
 \begin{lstlisting}[caption={Sichere Ausgabe eines Kalenderereignisses}]
 <template v-slot:event="{ event }">
@@ -30,26 +51,51 @@ Vue-Interpolation mit doppelten geschweiften Klammern escaped HTML standardmäß
 </template>
 \end{lstlisting}
 
-Eine Content Security Policy (CSP) ist eine zusätzliche Schutzschicht, ersetzt aber nicht die Behebung der unsicheren Senke~\cite{owaspCsp}. Serverseitige Validierung verbessert Datenqualität und begrenzt Payloads, kann kontextgerechtes Escaping ebenfalls nicht ersetzen.
+Eine Content Security Policy (CSP) ist eine zusätzliche
+Schutzschicht, ersetzt aber nicht die Behebung der unsicheren
+Senke~\cite{owaspCsp}. Serverseitige Validierung verbessert
+Datenqualität und begrenzt Payloads, kann kontextgerechtes Escaping
+ebenfalls nicht ersetzen.
 
 \subsection{Same-Origin Policy und CORS}
 
-Eine Origin besteht aus Schema, Host und Port. Deshalb sind \texttt{http://localhost:8078} und \texttt{http://localhost:8079} verschiedene Origins. Die Same-Origin Policy verhindert grundsätzlich, dass JavaScript einer Origin Antworten einer fremden Origin liest. Ein Request kann dabei teilweise trotzdem gesendet werden; blockiert wird vor allem der Zugriff des Skripts auf die Antwort.
+Eine Origin besteht aus Schema, Host und Port. Deshalb sind
+\texttt{http://localhost:8078} und \texttt{http://localhost:8079}
+verschiedene Origins. Die Same-Origin Policy verhindert
+grundsätzlich, dass JavaScript einer Origin Antworten einer fremden
+Origin liest. Ein Request kann dabei teilweise trotzdem gesendet
+werden; blockiert wird vor allem der Zugriff des Skripts auf die Antwort.
 
-CORS ist die kontrollierte Lockerung dieser Browserregel. Der Server liefert dafür unter anderem folgende Header~\cite{mdnCors}:
+CORS ist die kontrollierte Lockerung dieser Browserregel. Der Server
+liefert dafür unter anderem folgende Header~\cite{mdnCors}:
 
 \begin{itemize}
-    \item \texttt{Access-Control-Allow-Origin}: erlaubte lesende Origin,
-    \item \texttt{Access-Control-Allow-Credentials}: Freigabe browserseitiger Credentials,
-    \item \texttt{Access-Control-Allow-Methods}: erlaubte HTTP-Methoden,
-    \item \texttt{Access-Control-Allow-Headers}: erlaubte Request-Header,
-    \item \texttt{Access-Control-Expose-Headers}: für JavaScript lesbare Response-Header.
+  \item \texttt{Access-Control-Allow-Origin}: erlaubte lesende Origin,
+  \item \texttt{Access-Control-Allow-Credentials}: Freigabe
+    browserseitiger Credentials,
+  \item \texttt{Access-Control-Allow-Methods}: erlaubte HTTP-Methoden,
+  \item \texttt{Access-Control-Allow-Headers}: erlaubte Request-Header,
+  \item \texttt{Access-Control-Expose-Headers}: für JavaScript
+    lesbare Response-Header.
 \end{itemize}
 
-Requests mit beispielsweise \texttt{Authorization} oder \texttt{Content-Type: application/json} lösen üblicherweise einen Preflight-Request mit \texttt{OPTIONS} aus. CORS muss deshalb vor der Spring-Security-Authentifizierung verarbeitet werden, da der Preflight noch keine Benutzer-Credentials enthält~\cite{springCors}.
+Requests mit beispielsweise \texttt{Authorization} oder
+\texttt{Content-Type: application/json} lösen üblicherweise einen
+Preflight-Request mit \texttt{OPTIONS} aus. CORS muss deshalb vor der
+Spring-Security-Authentifizierung verarbeitet werden, da der
+Preflight noch keine Benutzer-Credentials enthält~\cite{springCors}.
 
 \subsection{CORS ist keine Authentifizierung}
 
-CORS vergibt keine fachlichen Rechte und schützt eine API nicht vor direkten Requests außerhalb des Browsers. Authentifizierung beantwortet, wer ein Nutzer ist; Autorisierung beantwortet, was dieser Nutzer tun darf. CORS beantwortet lediglich, ob fremdes Browser-JavaScript eine Antwort lesen darf.
+CORS vergibt keine fachlichen Rechte und schützt eine API nicht vor
+direkten Requests außerhalb des Browsers. Authentifizierung
+beantwortet, wer ein Nutzer ist; Autorisierung beantwortet, was
+dieser Nutzer tun darf. CORS beantwortet lediglich, ob fremdes
+Browser-JavaScript eine Antwort lesen darf.
 
-Ebenso wichtig ist die Abgrenzung beim Scheduler: Das Frontend setzt den Bearer-Token explizit im \texttt{Authorization}-Header. Eine fremde Webseite erhält diesen Token nicht automatisch allein durch eine offene CORS-Konfiguration. Ein Token-Leak setzt eine zusätzliche Schwachstelle voraus, etwa XSS, eine unsichere Token-Antwort oder falsch eingesetzte Cookie-Authentifizierung.
+Ebenso wichtig ist die Abgrenzung beim Scheduler: Das Frontend setzt
+den Bearer-Token explizit im \texttt{Authorization}-Header. Eine
+fremde Webseite erhält diesen Token nicht automatisch allein durch
+eine offene CORS-Konfiguration. Ein Token-Leak setzt eine zusätzliche
+Schwachstelle voraus, etwa XSS, eine unsichere Token-Antwort oder
+falsch eingesetzte Cookie-Authentifizierung.

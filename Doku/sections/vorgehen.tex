@@ -6,44 +6,69 @@
 Die Bearbeitung wurde entlang der beiden Themen aufgeteilt:
 
 \begin{table}[H]
-\centering
-\caption{Arbeitsteilung innerhalb der Projektgruppe}
-\begin{tabularx}{\textwidth}{lX}
-\toprule
-\textbf{Thema} & \textbf{Verantwortliche und Aufgaben}\\
-\midrule
-XSS & Arvid Freese und Linus Paliga: Grundlagen, Suche nach Quellen und Senken, Analyse der \texttt{vue-cal}-Schwachstelle, XSS-Demo und Fix\\
-CORS & Tom Markmann und Raik Ole Kannenberg: Grundlagen, Analyse von Spring Security, Vite, Keycloak und Datei-Endpunkten, CORS-Demo und sichere Konfiguration\\
-\bottomrule
-\end{tabularx}
+  \centering
+  \caption{Arbeitsteilung innerhalb der Projektgruppe}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Thema} & \textbf{Verantwortliche und Aufgaben}\\
+    \midrule
+    XSS & Arvid Freese und Linus Paliga: Grundlagen, Suche nach
+    Quellen und Senken, Analyse der \texttt{vue-cal}-Schwachstelle,
+    XSS-Demo und Fix\\
+    CORS & Tom Markmann und Raik Ole Kannenberg: Grundlagen, Analyse
+    von Spring Security, Vite, Keycloak und Datei-Endpunkten,
+    CORS-Demo und sichere Konfiguration\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
 
-Anders als in einem iterativen Issue-Prozess wurden zunächst die theoretischen Grundlagen getrennt erarbeitet. Anschließend prüften beide Teilgruppen den Scheduler aus ihrer jeweiligen Perspektive. Die Ergebnisse wurden in den Markdown-Berichten \texttt{xss-analyse-und-demo.md} und \texttt{cors-analyse-und-demo.md} konsolidiert und für die gemeinsame Präsentation zusammengeführt.
+Anders als in einem iterativen Issue-Prozess wurden zunächst die
+theoretischen Grundlagen getrennt erarbeitet. Anschließend prüften
+beide Teilgruppen den Scheduler aus ihrer jeweiligen Perspektive. Die
+Ergebnisse wurden in den Markdown-Berichten
+\texttt{xss-analyse-und-demo.md} und
+\texttt{cors-analyse-und-demo.md} konsolidiert und für die gemeinsame
+Präsentation zusammengeführt.
 
 \subsection{Scheduler-Architektur}
 
-Der untersuchte Scheduler verwendet Spring Boot 3.0.1 und Java 17 im Backend sowie Vue 3 und Vite im Frontend. Die Authentifizierung erfolgt über Keycloak; die API validiert Bearer-JWTs als OAuth2 Resource Server.
+Der untersuchte Scheduler verwendet Spring Boot 3.0.1 und Java 17 im
+Backend sowie Vue 3 und Vite im Frontend. Die Authentifizierung
+erfolgt über Keycloak; die API validiert Bearer-JWTs als OAuth2 Resource Server.
 
 \begin{table}[H]
-\centering
-\caption{Lokale Komponenten und Origins}
-\begin{tabular}{lll}
-\toprule
-\textbf{Komponente} & \textbf{Adresse} & \textbf{Rolle}\\
-\midrule
-Keycloak & \texttt{http://localhost:8080} & Identitätsprovider\\
-Spring-API & \texttt{http://localhost:8079} & Backend und Datenzugriff\\
-Vue-Frontend & \texttt{http://localhost:8078} & reguläre Webanwendung\\
-PostgreSQL & \texttt{localhost:5432} & persistente Daten\\
-Demo-Seite & \texttt{http://localhost:5173} & fremde Origin für CORS-Demo\\
-\bottomrule
-\end{tabular}
+  \centering
+  \caption{Lokale Komponenten und Origins}
+  \begin{tabular}{lll}
+    \toprule
+    \textbf{Komponente} & \textbf{Adresse} & \textbf{Rolle}\\
+    \midrule
+    Keycloak & \texttt{http://localhost:8080} & Identitätsprovider\\
+    Spring-API & \texttt{http://localhost:8079} & Backend und Datenzugriff\\
+    Vue-Frontend & \texttt{http://localhost:8078} & reguläre Webanwendung\\
+    PostgreSQL & \texttt{localhost:5432} & persistente Daten\\
+    Demo-Seite & \texttt{http://localhost:5173} & fremde Origin für CORS-Demo\\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
-Das Frontend ruft die API relativ über \texttt{/api/...} auf. \texttt{web/vite.config.js} leitet diese Requests lokal an Port 8079 weiter. Aus Sicht des Browsers bleiben die normalen Requests damit same-origin zu Port 8078.
+Das Frontend ruft die API relativ über \texttt{/api/...} auf.
+\texttt{web/vite.config.js} leitet diese Requests lokal an Port 8079
+weiter. Aus Sicht des Browsers bleiben die normalen Requests damit
+same-origin zu Port 8078.
 
 \subsection{Prüfmethode}
 
-Die Analyse kombinierte statische Quellcodeprüfung, Konfigurationsvergleich und kontrollierte lokale Demonstrationen. Für XSS wurden nutzerkontrollierbare Felder bis zu ihren Ausgabestellen verfolgt und eigene sowie externe HTML-Senken gesucht. Für CORS wurden Spring Security, Vite-Proxy, Frontend-Requests, Keycloak-Web-Origins, Nginx und öffentliche Datei-Endpunkte geprüft.
+Die Analyse kombinierte statische Quellcodeprüfung,
+Konfigurationsvergleich und kontrollierte lokale Demonstrationen. Für
+XSS wurden nutzerkontrollierbare Felder bis zu ihren Ausgabestellen
+verfolgt und eigene sowie externe HTML-Senken gesucht. Für CORS
+wurden Spring Security, Vite-Proxy, Frontend-Requests,
+Keycloak-Web-Origins, Nginx und öffentliche Datei-Endpunkte geprüft.
 
-Die weiteren relevanten Entwicklungsbranches wurden ebenfalls auf das VueCal-Muster geprüft; die ursprüngliche Schwachstelle ist dort vorhanden. Der dauerhafte Fix wurde jedoch ausschließlich auf \texttt{capstone-main} ausgerollt, und zwar ohne Demo-Umschaltung und ohne schwache CORS-Konfiguration. Der Security-Branch behält dagegen bewusst sichere und unsichere Varianten für den direkten Vergleich.
+Die weiteren relevanten Entwicklungsbranches wurden ebenfalls auf das
+VueCal-Muster geprüft; die ursprüngliche Schwachstelle ist dort
+vorhanden. Der dauerhafte Fix wurde jedoch ausschließlich auf
+\texttt{capstone-main} ausgerollt, und zwar ohne Demo-Umschaltung und
+ohne schwache CORS-Konfiguration. Der Security-Branch behält dagegen
+bewusst sichere und unsichere Varianten für den direkten Vergleich.
