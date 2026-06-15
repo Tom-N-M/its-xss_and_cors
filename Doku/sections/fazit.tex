@@ -7,11 +7,12 @@ XSS-Schwachstelle lag im Zusammenspiel aus kontrollierbaren
 Datenbankwerten und dem komfortablen, aber für diese Daten
 ungeeigneten Standardrenderer von \texttt{vue-cal}. Der strukturelle
 Fix über eigene Event-Slots und Vue-Interpolation beseitigt die
-Ursache. Nach dem vollständigen Rollout direkt auf
-\texttt{capstone-main} mit Commit \texttt{3742df35} und erneuter
-Prüfung besteht dort kein bekanntes aktuelles XSS-Risiko dieser Art.
-Sämtliche anderen zum Berichtsstand geprüften Remote-Branches weisen
-das ursprüngliche anfällige VueCal-Muster weiterhin auf.
+Ursache. Auf \path{fix/vue-cal-xss-safe-rendering} ist er vollständig
+umgesetzt, geprüft und bereit für den Merge in \texttt{capstone-main}.
+Der konkrete Stand ist in Commit \texttt{08567da9} festgehalten. Auf
+dem Fix-Branch besteht kein bekanntes aktuelles XSS-Risiko dieser Art;
+\texttt{capstone-main} und sämtliche anderen zum Berichtsstand
+geprüften Remote-Branches bleiben bis zum Merge anfällig.
 
 Bei CORS war die Ausgangslage differenzierter: Die Spring-API war
 nicht pauschal für fremde Origins freigegeben und die normale lokale

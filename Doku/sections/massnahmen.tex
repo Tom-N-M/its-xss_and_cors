@@ -5,17 +5,18 @@
 
 \begin{table}[H]
   \centering
-  \caption{Bewertung zum Berichtsstand nach XSS-Rollout}
+  \caption{Bewertung zum Berichtsstand vor dem Merge des XSS-Fixes}
   \small
   \begin{tabularx}{\textwidth}{l l X}
     \toprule
     \textbf{Bereich} & \textbf{Status} & \textbf{Begründung}\\
     \midrule
-    VueCal Stored DOM XSS & behoben & Eigene Event-Slots und
-    Vue-Interpolation sind auf \texttt{capstone-main} vollständig
-    mit Commit \texttt{3742df35} ausgerollt; erneute Prüfung ohne
-    aktuellen Befund. Andere geprüfte Remote-Branches bleiben
-    anfällig.\\
+    VueCal Stored DOM XSS & merge-bereit & Eigene Event-Slots und
+    Vue-Interpolation sind auf
+    \path{fix/vue-cal-xss-safe-rendering} mit Commit
+    \texttt{08567da9} vollständig umgesetzt und geprüft;
+    \texttt{capstone-main} und andere geprüfte
+    Remote-Branches bleiben bis zum Merge anfällig.\\
     Eigene Vue-HTML-Senken & kein Befund & Keine produktive direkte
     Verwendung von \texttt{v-html}, \texttt{innerHTML} oder
     vergleichbaren Senken in \texttt{web/src}.\\
@@ -48,7 +49,7 @@ authentifiziert und fachlich autorisiert werden:
 
 \subsection{Priorität 2: XSS-Fix durch Tests absichern}
 
-Der ausgerollte Fix sollte mit Komponenten- oder End-to-End-Tests
+Der merge-bereite Fix sollte mit Komponenten- oder End-to-End-Tests
 gegen Regression geschützt werden. Für jede \texttt{VueCal}-Ansicht
 wird ein Event mit HTML- und Event-Handler-Zeichenfolge gerendert.
 Der Test muss bestätigen, dass der String als Text sichtbar bleibt

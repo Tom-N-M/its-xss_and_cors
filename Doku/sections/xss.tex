@@ -77,20 +77,21 @@ demonstriert den Unterschied exemplarisch mit zwei Komponenten:
 \path{web/.env.xss-safe}, die Umschaltung in \path{web/src/router.js}
 und die npm-Skripte \path{dev:xss-safe} beziehungsweise
 \path{build:xss-safe} sind reine Demo-Artefakte. Auf
-\texttt{capstone-main} ist der sichere Renderer direkt in den
-regulären Ansichten umgesetzt; eine Laufzeitumschaltung zurück zur
-anfälligen Variante ist dort nicht vorhanden. Die Umsetzung ist in
-Commit \texttt{3742df35} mit der Nachricht
+\path{fix/vue-cal-xss-safe-rendering} ist der sichere Renderer direkt
+in den regulären Ansichten umgesetzt; eine Laufzeitumschaltung zurück
+zur anfälligen Variante ist dort nicht vorhanden. Die Umsetzung ist in
+Commit \texttt{08567da9} mit der Nachricht
 \texttt{fix: render VueCal events safely} dokumentiert.
 
-\subsection{Bewertung nach dem Rollout}
+\subsection{Bewertung des Fix-Branches}
 
-Nach dem vollständigen Rollout und einer erneuten Prüfung aller
-relevanten Kalenderansichten auf \texttt{capstone-main} besteht dort
-kein bekanntes aktuelles XSS-Risiko über den
-\texttt{vue-cal}-Standardrenderer. Sämtliche anderen zum
-Berichtsstand geprüften Remote-Branches enthalten Commit
-\texttt{3742df35} nicht und weisen das ursprüngliche anfällige
+Nach der vollständigen Umsetzung und einer erneuten Prüfung aller
+relevanten Kalenderansichten auf
+\path{fix/vue-cal-xss-safe-rendering} besteht dort kein bekanntes
+aktuelles XSS-Risiko über den \texttt{vue-cal}-Standardrenderer. Der
+Branch ist bereit für den Merge in \texttt{capstone-main}. Bis zu
+diesem Merge weisen \texttt{capstone-main} und sämtliche anderen zum
+Berichtsstand geprüften Remote-Branches das ursprüngliche anfällige
 VueCal-Muster weiterhin auf. Diese Aussage bedeutet nicht, dass
 zukünftige Änderungen automatisch sicher bleiben. Neue Bibliotheken,
 neue Kalenderansichten oder eine spätere Verwendung von

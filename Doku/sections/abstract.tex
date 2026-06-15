@@ -18,10 +18,11 @@
   Bibliothek \texttt{vue-cal} übergeben, der Event-Titel und -Inhalte
   als HTML rendert. Die Schwachstelle wurde durch eigene Event-Slots
   mit Vue-Interpolation strukturell behoben. Zum Berichtsstand ist
-  dieser Fix direkt auf \texttt{capstone-main} in allen relevanten
-  Kalenderansichten ausgerollt. Der konkrete Fix ist durch Commit
-  \texttt{3742df35} nachvollziehbar. Nach erneuter Prüfung besteht
-  dort kein bekanntes aktuelles XSS-Risiko dieser Art.
+  dieser Fix auf \path{fix/vue-cal-xss-safe-rendering} in allen
+  relevanten Kalenderansichten umgesetzt, geprüft und bereit für den
+  Merge in \texttt{capstone-main}. Der konkrete Stand ist durch
+  Commit \texttt{08567da9} nachvollziehbar. Auf dem Fix-Branch besteht
+  nach erneuter Prüfung kein bekanntes aktuelles XSS-Risiko dieser Art.
 
   Die Spring-API besaß im untersuchten Ausgangsstand keine pauschale
   CORS-Freigabe. Die normale lokale Anwendung vermeidet

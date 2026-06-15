@@ -46,10 +46,11 @@ Rendering-Stelle in \texttt{vue-cal} wurde zusätzlich in der
 installierten Bibliothek untersucht. Produktive Systeme wurden nicht
 aktiv angegriffen.
 
-Der Bericht beschreibt den Stand nach dem vollständigen Rollout des
-XSS-Fixes direkt auf \path{capstone-main}. Die Demo-Setups wurden
-dagegen im separaten, von \path{capstone-main} abgeleiteten Stand
-\path{origin/its-xss-cors-security-break} umgesetzt. Absichtlich
-schwache CORS-Einstellungen, Umschaltlogik und Demo-Testdaten gehören
-ausschließlich zu diesem Demonstrationsstand und nicht zum
-produktiven Fix.
+Der Bericht beschreibt den Stand des auf
+\path{fix/vue-cal-xss-safe-rendering} vollständig umgesetzten und für
+den Merge in \path{capstone-main} bereiten XSS-Fixes. Die Demo-Setups
+wurden dagegen im separaten, von \path{capstone-main} abgeleiteten
+Stand \path{origin/its-xss-cors-security-break} umgesetzt.
+Absichtlich schwache CORS-Einstellungen, Umschaltlogik und
+Demo-Testdaten gehören ausschließlich zu diesem Demonstrationsstand
+und nicht zum produktiven Fix.
