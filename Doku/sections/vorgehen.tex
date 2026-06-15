@@ -68,7 +68,11 @@ Keycloak-Web-Origins, Nginx und öffentliche Datei-Endpunkte geprüft.
 
 Die weiteren relevanten Entwicklungsbranches wurden ebenfalls auf das
 VueCal-Muster geprüft; die ursprüngliche Schwachstelle ist dort
-vorhanden. Der dauerhafte Fix wurde jedoch ausschließlich auf
-\texttt{capstone-main} ausgerollt, und zwar ohne Demo-Umschaltung und
-ohne schwache CORS-Konfiguration. Der Security-Branch behält dagegen
-bewusst sichere und unsichere Varianten für den direkten Vergleich.
+vorhanden. Der dauerhafte Fix wurde ausschließlich auf
+\texttt{capstone-main} mit Commit \texttt{3742df35} ausgerollt und
+geprüft, und zwar ohne Demo-Umschaltung und ohne schwache
+CORS-Konfiguration. Sämtliche anderen zum Berichtsstand geprüften
+Remote-Branches enthalten diesen Commit nicht und weisen das
+ursprüngliche anfällige VueCal-Muster weiterhin auf. Der Demo-Stand
+\path{origin/its-xss-cors-security-break} behält bewusst sichere und
+unsichere Varianten für den direkten Vergleich.

@@ -13,7 +13,9 @@
     \midrule
     VueCal Stored DOM XSS & behoben & Eigene Event-Slots und
     Vue-Interpolation sind auf \texttt{capstone-main} vollständig
-    ausgerollt; erneute Prüfung ohne aktuellen Befund.\\
+    mit Commit \texttt{3742df35} ausgerollt; erneute Prüfung ohne
+    aktuellen Befund. Andere geprüfte Remote-Branches bleiben
+    anfällig.\\
     Eigene Vue-HTML-Senken & kein Befund & Keine produktive direkte
     Verwendung von \texttt{v-html}, \texttt{innerHTML} oder
     vergleichbaren Senken in \texttt{web/src}.\\

@@ -3,8 +3,9 @@
 
 \subsection{XSS-Demo}
 
-Die XSS-Demo stellt denselben persistent gespeicherten Wert in einer
-anfälligen und einer sicheren Kalenderansicht gegenüber. Der Test
+Die XSS-Demo auf \path{origin/its-xss-cors-security-break} stellt
+denselben persistent gespeicherten Wert in einer anfälligen und einer
+sicheren Kalenderansicht gegenüber. Der Test
 \path{api/src/test/java/com/frostbear/scheduler/demo/XssDemoSetupTest.java}
 bereitet eine vorhandene lokale Planungsperiode mit reproduzierbaren
 Demo-Daten vor. Die zugehörige Gradle-Aufgabe \path{prepareXssDemo}
@@ -31,10 +32,10 @@ sondern dieselbe gespeicherte Eingabe:
 
 \subsection{CORS-Demo}
 
-Die CORS-Demo verwendet vier lokale Komponenten: Keycloak und
-PostgreSQL, die Spring-API auf Port 8079, das reguläre Vue-Frontend
-auf Port 8078 sowie die separate Angreifer-Demo aus
-\texttt{cors/index.html} auf Port 5173.
+Die CORS-Demo auf \path{origin/its-xss-cors-security-break} verwendet
+vier lokale Komponenten: Keycloak und PostgreSQL, die Spring-API auf
+Port 8079, das reguläre Vue-Frontend auf Port 8078 sowie die separate
+Angreifer-Demo aus \texttt{cors/index.html} auf Port 5173.
 
 Die Seite ruft den öffentlichen Planungsperioden-Export direkt auf
 und versucht, die Antwort als Datei zu lesen. Der Vergleich zeigt:

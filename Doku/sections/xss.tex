@@ -64,8 +64,8 @@ Werten besitzen zum Berichtsstand eigene Event-Slots. Titel, Inhalte
 und Statusinformationen werden darin als Text oder als strukturierte
 UI-Elemente gerendert.
 
-Der Security-Branch demonstriert den Unterschied exemplarisch mit
-zwei Komponenten:
+Der Demo-Stand \path{origin/its-xss-cors-security-break}
+demonstriert den Unterschied exemplarisch mit zwei Komponenten:
 
 \begin{itemize}
   \item \texttt{ReserveTimeslot.vue}: ursprünglicher Standardrenderer
@@ -77,22 +77,25 @@ zwei Komponenten:
 \path{web/.env.xss-safe}, die Umschaltung in \path{web/src/router.js}
 und die npm-Skripte \path{dev:xss-safe} beziehungsweise
 \path{build:xss-safe} sind reine Demo-Artefakte. Auf
-\path{capstone-main} ist der sichere Renderer direkt in den regulären
-Ansichten umgesetzt; eine Laufzeitumschaltung zurück zur anfälligen
-Variante ist dort nicht vorhanden.
+\texttt{capstone-main} ist der sichere Renderer direkt in den
+regulären Ansichten umgesetzt; eine Laufzeitumschaltung zurück zur
+anfälligen Variante ist dort nicht vorhanden. Die Umsetzung ist in
+Commit \texttt{3742df35} mit der Nachricht
+\texttt{fix: render VueCal events safely} dokumentiert.
 
 \subsection{Bewertung nach dem Rollout}
 
 Nach dem vollständigen Rollout und einer erneuten Prüfung aller
 relevanten Kalenderansichten auf \texttt{capstone-main} besteht dort
 kein bekanntes aktuelles XSS-Risiko über den
-\texttt{vue-cal}-Standardrenderer. Die weiteren relevanten
-Entwicklungsbranches wurden ebenfalls geprüft und enthalten die
-ursprüngliche Schwachstelle weiterhin; der Fix wurde bewusst nur auf
-\texttt{capstone-main} ausgerollt. Diese Aussage bedeutet nicht, dass
+\texttt{vue-cal}-Standardrenderer. Sämtliche anderen zum
+Berichtsstand geprüften Remote-Branches enthalten Commit
+\texttt{3742df35} nicht und weisen das ursprüngliche anfällige
+VueCal-Muster weiterhin auf. Diese Aussage bedeutet nicht, dass
 zukünftige Änderungen automatisch sicher bleiben. Neue Bibliotheken,
 neue Kalenderansichten oder eine spätere Verwendung von
-\texttt{v-html} können dieselbe Schwachstellenklasse erneut einführen.
+\texttt{v-html} können dieselbe Schwachstellenklasse erneut
+einführen.
 
 \subsection{Verbleibende Schutzmaßnahmen}
 

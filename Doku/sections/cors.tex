@@ -18,8 +18,8 @@ etwa auf Port 5173, die API direkt anspricht.
 
 \subsection{Bewusst unsichere Demo-Konfiguration}
 
-Der Branch \path{its-xss-cors-security-break} ergänzt für die
-Live-Demo eine Spring-CORS-Bean vom Typ
+Der Demo-Stand \path{origin/its-xss-cors-security-break} ergänzt für
+die Live-Demo eine Spring-CORS-Bean vom Typ
 \path{CorsConfigurationSource}. Die unsichere Variante akzeptiert mit
 \texttt{allowedOriginPatterns("*")} jede Origin und erlaubt
 gleichzeitig Credentials. Zusätzlich werden sämtliche üblichen
